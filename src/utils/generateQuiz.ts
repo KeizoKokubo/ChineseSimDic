@@ -34,7 +34,11 @@ function distractorsFor(entry:WordEntry,mode:QuizMode,pool:WordEntry[],answer:st
 
 export function generateQuiz(entries:WordEntry[],mode:QuizMode,count=10,distractorEntries:WordEntry[]=entries):QuizQuestion[]{
   const eligible=entries.filter(entry=>eligibleForMode(entry,mode));
-  return shuffle(eligible).flatMap((entry,index)=>{
+  const types:WordEntry['similarityType'][]=['same','overlap','different'];
+  const selected=types.flatMap(type=>shuffle(eligible.filter(entry=>entry.similarityType===type)).slice(0,Math.floor(count/types.length)));
+  const selectedIds=new Set(selected.map(entry=>entry.id));
+  selected.push(...shuffle(eligible.filter(entry=>!selectedIds.has(entry.id))).slice(0,Math.max(0,count-selected.length)));
+  return shuffle(selected).flatMap((entry,index)=>{
     const answer=answerFor(entry,mode);
     const distractors=distractorsFor(entry,mode,distractorEntries,answer);
     if(distractors.length<2)return [];

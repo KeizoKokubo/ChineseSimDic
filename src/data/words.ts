@@ -1,6 +1,15 @@
-import type { CharacterRelation, LexicalRelation, SimilarityType, WordEntry } from '../types/Word';
+import type { CharacterRelation, SimilarityType, WordEntry } from '../types/Word';
 
 // 監修版データ。similarity は日本人中国語学習者向けの学習上の目安であり、言語学的な絶対尺度ではありません。
+export type ReviewedCharacterRelation = CharacterRelation | 'scriptVariant';
+export type LexicalRelation = 'bothCommon' | 'chineseRareOrSpecialized' | 'chineseNotStandard';
+
+export type ReviewedWordEntry = Omit<WordEntry, 'characterRelation' | 'example'> & {
+  characterRelation: ReviewedCharacterRelation;
+  lexicalRelation: LexicalRelation;
+  example?: { chinese: string; pinyin: string; japanese: string };
+};
+
 type EquivalentSeed = {
   simplified: string; traditional: string; pinyin: string; meaning: string;
   example: { chinese: string; pinyin: string; japanese: string };
@@ -113,12 +122,30 @@ const equivalents: Record<string, EquivalentSeed> = {
     example: { chinese: '我每个月都会存一点钱。', pinyin: 'Wǒ měi ge yuè dōu huì cún yìdiǎn qián.', japanese: '私は毎月少しずつ貯金します。' } },
   '注文': { simplified: '订购', traditional: '訂購', pinyin: 'dìng gòu', meaning: '商品を注文する',
     example: { chinese: '我在网上订购了一本书。', pinyin: 'Wǒ zài wǎngshàng dìnggòu le yì běn shū.', japanese: '私はネットで本を1冊注文しました。' } },
+  '真面目': { simplified: '认真', traditional: '認真', pinyin: 'rèn zhēn', meaning: '真面目である、真剣だ',
+    example: { chinese: '他学习非常认真。', pinyin: 'Tā xuéxí fēicháng rènzhēn.', japanese: '彼はとても真面目に勉強します。' } },
+  '顔色': { simplified: '脸色', traditional: '臉色', pinyin: 'liǎn sè', meaning: '顔色、顔つき',
+    example: { chinese: '他的脸色不太好。', pinyin: 'Tā de liǎnsè bú tài hǎo.', japanese: '彼は顔色があまりよくありません。' } },
+  '出世': { simplified: '出人头地', traditional: '出人頭地', pinyin: 'chū rén tóu dì', meaning: '出世する、頭角を現す',
+    example: { chinese: '他希望通过努力出人头地。', pinyin: 'Tā xīwàng tōngguò nǔlì chūrén-tóudì.', japanese: '彼は努力して出世したいと思っています。' } },
+  '人間': { simplified: '人', traditional: '人', pinyin: 'rén', meaning: '人、人間',
+    example: { chinese: '他是一个很有趣的人。', pinyin: 'Tā shì yí ge hěn yǒuqù de rén.', japanese: '彼はとても面白い人です。' } },
+  '心中': { simplified: '殉情', traditional: '殉情', pinyin: 'xùn qíng', meaning: '恋愛関係で心中する',
+    example: { chinese: '新闻报道了一起殉情事件。', pinyin: 'Xīnwén bàodào le yì qǐ xùnqíng shìjiàn.', japanese: 'ニュースは心中事件を報じました。' } },
+  '邪魔': { simplified: '打扰', traditional: '打擾', pinyin: 'dǎ rǎo', meaning: '邪魔する、迷惑をかける',
+    example: { chinese: '不好意思，打扰一下。', pinyin: 'Bù hǎoyìsi, dǎrǎo yíxià.', japanese: 'すみません、ちょっと失礼します。' } },
+  '結束': { simplified: '团结', traditional: '團結', pinyin: 'tuán jié', meaning: '結束する、団結する',
+    example: { chinese: '大家团结起来解决问题。', pinyin: 'Dàjiā tuánjié qǐlái jiějué wèntí.', japanese: 'みんなで結束して問題を解決します。' } },
+  '交代': { simplified: '换班', traditional: '換班', pinyin: 'huàn bān', meaning: '勤務を交代する',
+    example: { chinese: '我们六点换班。', pinyin: 'Wǒmen liù diǎn huànbān.', japanese: '私たちは6時に勤務交代します。' } },
+  '小人': { simplified: '小矮人', traditional: '小矮人', pinyin: 'xiǎo ǎi rén', meaning: '小人、小さな人',
+    example: { chinese: '故事里有七个小矮人。', pinyin: 'Gùshi lǐ yǒu qī ge xiǎo\'ǎirén.', japanese: '物語には7人の小人がいます。' } },
 };
 
 type Seed = {
   ja: [word: string, reading: string, meaning: string];
   zh: [simplified: string, traditional: string, pinyin: string, meaning: string];
-  similarity: number; type: SimilarityType; characters: CharacterRelation; lexical: LexicalRelation;
+  similarity: number; type: SimilarityType; characters: ReviewedCharacterRelation; lexical: LexicalRelation;
   example?: [chinese: string, pinyin: string, japanese: string];
   note: string; equivalentKey?: string;
 };
@@ -945,9 +972,821 @@ const seeds: Seed[] = [
     example: ['失败并不可怕。', 'Shībài bìng bù kěpà.', '失敗は怖いものではありません。'],
     note: '意味は同じ。',
   },
+  {
+    ja: ['政治', 'せいじ', '国家や社会を運営する活動'],
+    zh: ['政治', '政治', 'zhèng zhì', '政治'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他对国际政治很感兴趣。', 'Tā duì guójì zhèngzhì hěn gǎn xìngqù.', '彼は国際政治にとても関心があります。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['歴史', 'れきし', '過去の出来事やその変遷'],
+    zh: ['历史', '歷史', 'lì shǐ', '歴史'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['我喜欢学习中国历史。', 'Wǒ xǐhuan xuéxí Zhōngguó lìshǐ.', '私は中国の歴史を学ぶのが好きです。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['科学', 'かがく', '体系的に自然や社会を研究する学問'],
+    zh: ['科学', '科學', 'kē xué', '科学'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['科学改变了我们的生活。', 'Kēxué gǎibiàn le wǒmen de shēnghuó.', '科学は私たちの生活を変えました。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['技術', 'ぎじゅつ', '物事を実現するための技法や方法'],
+    zh: ['技术', '技術', 'jì shù', '技術、テクノロジー'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这项技术很先进。', 'Zhè xiàng jìshù hěn xiānjìn.', 'この技術はとても進んでいます。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['世界', 'せかい', '人間社会や地球全体'],
+    zh: ['世界', '世界', 'shì jiè', '世界'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['世界正在快速变化。', 'Shìjiè zhèngzài kuàisù biànhuà.', '世界は急速に変化しています。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['自由', 'じゆう', '束縛されず自分で選べること'],
+    zh: ['自由', '自由', 'zì yóu', '自由'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['每个人都希望拥有自由。', 'Měi ge rén dōu xīwàng yǒngyǒu zìyóu.', '誰もが自由を持つことを望みます。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['幸福', 'こうふく', '満ち足りて幸せな状態'],
+    zh: ['幸福', '幸福', 'xìng fú', '幸福、幸せ'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我希望家人幸福。', 'Wǒ xīwàng jiārén xìngfú.', '家族が幸せであることを願っています。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['努力', 'どりょく', '目標のために力を尽くすこと'],
+    zh: ['努力', '努力', 'nǔ lì', '努力する、努力'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['只要努力，就会有进步。', 'Zhǐyào nǔlì, jiù huì yǒu jìnbù.', '努力すれば進歩があります。'],
+    note: '中国語では動詞として非常によく使う。'
+  },
+  {
+    ja: ['経験', 'けいけん', '実際に見聞きし行ったこと'],
+    zh: ['经验', '經驗', 'jīng yàn', '経験、経験する'],
+    similarity: 96, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['他有丰富的工作经验。', 'Tā yǒu fēngfù de gōngzuò jīngyàn.', '彼には豊富な仕事経験があります。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['目的', 'もくてき', '目指す事柄'],
+    zh: ['目的', '目的', 'mù dì', '目的'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我们的目的很明确。', 'Wǒmen de mùdì hěn míngquè.', '私たちの目的は明確です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['方法', 'ほうほう', '物事を行うやり方'],
+    zh: ['方法', '方法', 'fāng fǎ', '方法、やり方'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这个方法很简单。', 'Zhège fāngfǎ hěn jiǎndān.', 'この方法はとても簡単です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['理由', 'りゆう', 'そう判断する根拠やわけ'],
+    zh: ['理由', '理由', 'lǐ yóu', '理由'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['请告诉我理由。', 'Qǐng gàosu wǒ lǐyóu.', '理由を教えてください。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['原因', 'げんいん', '物事を引き起こすもと'],
+    zh: ['原因', '原因', 'yuán yīn', '原因'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我们还不知道事故的原因。', 'Wǒmen hái bù zhīdào shìgù de yuányīn.', '私たちはまだ事故の原因を知りません。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['結果', 'けっか', '物事が進んだ末に生じた状態'],
+    zh: ['结果', '結果', 'jié guǒ', '結果、結果として'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['考试结果明天公布。', 'Kǎoshì jiéguǒ míngtiān gōngbù.', '試験結果は明日発表されます。'],
+    note: '中国語では動詞的に「結果として〜になる」の用法もある。'
+  },
+  {
+    ja: ['思想', 'しそう', '物事についての考え方'],
+    zh: ['思想', '思想', 'sī xiǎng', '思想、考え'],
+    similarity: 97, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他的思想很开放。', 'Tā de sīxiǎng hěn kāifàng.', '彼の考え方はとても開放的です。'],
+    note: '意味はかなり近い。'
+  },
+  {
+    ja: ['男女', 'だんじょ', '男性と女性'],
+    zh: ['男女', '男女', 'nán nǚ', '男性と女性'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['男女都可以参加。', 'Nánnǚ dōu kěyǐ cānjiā.', '男女とも参加できます。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['父母', 'ふぼ', '父と母'],
+    zh: ['父母', '父母', 'fù mǔ', '父母、両親'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他的父母住在北京。', 'Tā de fùmǔ zhù zài Běijīng.', '彼の両親は北京に住んでいます。'],
+    note: '意味は同じ。日常会話では「爸妈」も多い。'
+  },
+  {
+    ja: ['参加', 'さんか', '集まりや活動に加わること'],
+    zh: ['参加', '參加', 'cān jiā', '参加する'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['我想参加这个活动。', 'Wǒ xiǎng cānjiā zhège huódòng.', '私はこの活動に参加したいです。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['感謝', 'かんしゃ', 'ありがたく思うこと'],
+    zh: ['感谢', '感謝', 'gǎn xiè', '感謝する'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['非常感谢你的帮助。', 'Fēicháng gǎnxiè nǐ de bāngzhù.', 'あなたの助けにとても感謝します。'],
+    note: '中国語では動詞としてよく使う。'
+  },
+  {
+    ja: ['交流', 'こうりゅう', '互いに行き来し情報や気持ちを交わすこと'],
+    zh: ['交流', '交流', 'jiāo liú', '交流する、意見を交わす'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我们经常交流学习方法。', 'Wǒmen jīngcháng jiāoliú xuéxí fāngfǎ.', '私たちはよく学習方法について交流します。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['留学', 'りゅうがく', '外国などで学ぶこと'],
+    zh: ['留学', '留學', 'liú xué', '留学する'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['她明年去日本留学。', 'Tā míngnián qù Rìběn liúxué.', '彼女は来年日本へ留学します。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['理解', 'りかい', '意味や事情をわかること'],
+    zh: ['理解', '理解', 'lǐ jiě', '理解する'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我能理解你的想法。', 'Wǒ néng lǐjiě nǐ de xiǎngfǎ.', 'あなたの考えを理解できます。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['生活', 'せいかつ', '日々暮らすこと'],
+    zh: ['生活', '生活', 'shēng huó', '生活、暮らす'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这里的生活很方便。', 'Zhèlǐ de shēnghuó hěn fāngbiàn.', 'ここの生活はとても便利です。'],
+    note: '中国語では動詞「生活する」としても使う。'
+  },
+  {
+    ja: ['空間', 'くうかん', '物が存在できる広がり'],
+    zh: ['空间', '空間', 'kōng jiān', '空間、スペース'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这个房间的空间很大。', 'Zhège fángjiān de kōngjiān hěn dà.', 'この部屋は空間が広いです。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['教育', 'きょういく', '知識や技能などを教え育てること'],
+    zh: ['教育', '教育', 'jiào yù', '教育、教育する'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['教育对孩子很重要。', 'Jiàoyù duì háizi hěn zhòngyào.', '教育は子どもにとって重要です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['大学', 'だいがく', '高等教育を行う学校'],
+    zh: ['大学', '大學', 'dà xué', '大学'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['他在北京上大学。', 'Tā zài Běijīng shàng dàxué.', '彼は北京で大学に通っています。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['教室', 'きょうしつ', '授業を行う部屋'],
+    zh: ['教室', '教室', 'jiào shì', '教室'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['学生们已经进教室了。', 'Xuéshengmen yǐjīng jìn jiàoshì le.', '学生たちはもう教室に入りました。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['学習', 'がくしゅう', '知識や技能を学ぶこと'],
+    zh: ['学习', '學習', 'xué xí', '学ぶ、勉強する'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['学习语言需要时间。', 'Xuéxí yǔyán xūyào shíjiān.', '言語学習には時間が必要です。'],
+    note: '中国語では動詞として非常によく使う。'
+  },
+  {
+    ja: ['開始', 'かいし', '始めること'],
+    zh: ['开始', '開始', 'kāi shǐ', '開始する、始まる'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['会议九点开始。', 'Huìyì jiǔ diǎn kāishǐ.', '会議は9時に始まります。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['利用', 'りよう', '役立つように使うこと'],
+    zh: ['利用', '利用', 'lì yòng', '利用する'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我们可以利用这段时间学习。', 'Wǒmen kěyǐ lìyòng zhè duàn shíjiān xuéxí.', 'この時間を利用して勉強できます。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['使用', 'しよう', '道具などを使うこと'],
+    zh: ['使用', '使用', 'shǐ yòng', '使用する'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['请正确使用这个设备。', 'Qǐng zhèngquè shǐyòng zhège shèbèi.', 'この機器を正しく使用してください。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['必要', 'ひつよう', 'なくてはならないこと'],
+    zh: ['必要', '必要', 'bì yào', '必要である'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['没有必要担心。', 'Méiyǒu bìyào dānxīn.', '心配する必要はありません。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['重要', 'じゅうよう', '大切で価値が高いこと'],
+    zh: ['重要', '重要', 'zhòng yào', '重要である'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这是一个重要的问题。', 'Zhè shì yí ge zhòngyào de wèntí.', 'これは重要な問題です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['特別', 'とくべつ', '普通とは違って特に扱うこと'],
+    zh: ['特别', '特別', 'tè bié', '特別、とても'],
+    similarity: 92, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['今天特别冷。', 'Jīntiān tèbié lěng.', '今日は特に寒いです。'],
+    note: '中国語では副詞「とても・特に」として非常によく使う。'
+  },
+  {
+    ja: ['普通', 'ふつう', '一般的で特別でないこと'],
+    zh: ['普通', '普通', 'pǔ tōng', '普通、一般的'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这是很普通的现象。', 'Zhè shì hěn pǔtōng de xiànxiàng.', 'これはごく普通の現象です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['可能', 'かのう', '実現する見込みがあること'],
+    zh: ['可能', '可能', 'kě néng', '可能、かもしれない'],
+    similarity: 94, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['明天可能下雨。', 'Míngtiān kěnéng xiàyǔ.', '明日は雨が降るかもしれません。'],
+    note: '中国語では副詞的に「〜かもしれない」と頻繁に使う。'
+  },
+  {
+    ja: ['直接', 'ちょくせつ', '間に他のものを介さないこと'],
+    zh: ['直接', '直接', 'zhí jiē', '直接'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['你可以直接问他。', 'Nǐ kěyǐ zhíjiē wèn tā.', '彼に直接聞いてよいです。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['間接', 'かんせつ', '他のものを介すること'],
+    zh: ['间接', '間接', 'jiàn jiē', '間接'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这是间接的影响。', 'Zhè shì jiànjiē de yǐngxiǎng.', 'これは間接的な影響です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['簡単', 'かんたん', '複雑でなく容易なこと'],
+    zh: ['简单', '簡單', 'jiǎn dān', '簡単、単純'],
+    similarity: 96, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这个问题很简单。', 'Zhège wèntí hěn jiǎndān.', 'この問題は簡単です。'],
+    note: '意味はほぼ同じ。中国語では「単純だ」の意味も強い。'
+  },
+  {
+    ja: ['困難', 'こんなん', '実現や処理が難しいこと'],
+    zh: ['困难', '困難', 'kùn nan', '困難、難しい'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['我们遇到了一些困难。', 'Wǒmen yùdào le yìxiē kùnnan.', '私たちはいくつかの困難に直面しました。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['便利', 'べんり', '都合よく役立つこと'],
+    zh: ['便利', '便利', 'biàn lì', '便利、都合がよい'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['坐地铁很便利。', 'Zuò dìtiě hěn biànlì.', '地下鉄はとても便利です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['正確', 'せいかく', '間違いがなく確かなこと'],
+    zh: ['正确', '正確', 'zhèng què', '正しい、正確な'],
+    similarity: 94, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['请给我正确的地址。', 'Qǐng gěi wǒ zhèngquè de dìzhǐ.', '正確な住所を教えてください。'],
+    note: '中国語では「正しい」の意味まで広くカバーする。'
+  },
+  {
+    ja: ['基本', 'きほん', '物事の土台となるもの'],
+    zh: ['基本', '基本', 'jī běn', '基本、基本的に'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我基本同意你的意见。', 'Wǒ jīběn tóngyì nǐ de yìjiàn.', '私は基本的にあなたの意見に賛成です。'],
+    note: '中国語では副詞「だいたい、基本的に」としても頻用。'
+  },
+  {
+    ja: ['一般', 'いっぱん', '広く共通していること'],
+    zh: ['一般', '一般', 'yì bān', '一般、普通、同じくらい'],
+    similarity: 90, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['一般情况下不会有问题。', 'Yìbān qíngkuàng xià bú huì yǒu wèntí.', '一般的な状況では問題ありません。'],
+    note: '中心義は近いが、中国語では比較の「〜と同じくらい」にも使う。'
+  },
+  {
+    ja: ['個人', 'こじん', '一人の人間'],
+    zh: ['个人', '個人', 'gè rén', '個人、個人的'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这是我的个人意见。', 'Zhè shì wǒ de gèrén yìjiàn.', 'これは私個人の意見です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['国家', 'こっか', '政治的に組織された国'],
+    zh: ['国家', '國家', 'guó jiā', '国家、国'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['每个国家都有自己的法律。', 'Měi ge guójiā dōu yǒu zìjǐ de fǎlǜ.', 'どの国にも独自の法律があります。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['国際', 'こくさい', '国と国との間に関すること'],
+    zh: ['国际', '國際', 'guó jì', '国際'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这是一个国际会议。', 'Zhè shì yí ge guójì huìyì.', 'これは国際会議です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['中央', 'ちゅうおう', '中心となる場所'],
+    zh: ['中央', '中央', 'zhōng yāng', '中央、中心部'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['广场中央有一座雕像。', 'Guǎngchǎng zhōngyāng yǒu yí zuò diāoxiàng.', '広場の中央に彫像があります。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['公共', 'こうきょう', '社会全体に関係すること'],
+    zh: ['公共', '公共', 'gōng gòng', '公共の'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['请保持公共场所安静。', 'Qǐng bǎochí gōnggòng chǎngsuǒ ānjìng.', '公共の場所では静かにしてください。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['公園', 'こうえん', '一般に開放された庭園'],
+    zh: ['公园', '公園', 'gōng yuán', '公園'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['孩子们在公园里玩。', 'Háizimen zài gōngyuán lǐ wán.', '子どもたちは公園で遊んでいます。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['動物', 'どうぶつ', '動物界に属する生物'],
+    zh: ['动物', '動物', 'dòng wù', '動物'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['孩子喜欢看动物。', 'Háizi xǐhuan kàn dòngwù.', '子どもは動物を見るのが好きです。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['植物', 'しょくぶつ', '植物界に属する生物'],
+    zh: ['植物', '植物', 'zhí wù', '植物'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这种植物需要很多阳光。', 'Zhè zhǒng zhíwù xūyào hěn duō yángguāng.', 'この植物には多くの日光が必要です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['海洋', 'かいよう', '広大な海'],
+    zh: ['海洋', '海洋', 'hǎi yáng', '海洋'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我们应该保护海洋环境。', 'Wǒmen yīnggāi bǎohù hǎiyáng huánjìng.', '私たちは海洋環境を守るべきです。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['地球', 'ちきゅう', '人類が暮らす惑星'],
+    zh: ['地球', '地球', 'dì qiú', '地球'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['地球围绕太阳运行。', 'Dìqiú wéirào tàiyáng yùnxíng.', '地球は太陽の周りを回っています。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['宇宙', 'うちゅう', '天体を含む空間全体'],
+    zh: ['宇宙', '宇宙', 'yǔ zhòu', '宇宙'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['人类一直在探索宇宙。', 'Rénlèi yìzhí zài tànsuǒ yǔzhòu.', '人類はずっと宇宙を探査しています。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['太陽', 'たいよう', '太陽系の中心にある恒星'],
+    zh: ['太阳', '太陽', 'tài yáng', '太陽'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['太阳已经出来了。', 'Tàiyáng yǐjīng chūlái le.', '太陽がもう出ました。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['季節', 'きせつ', '一年を気候などで分けた時期'],
+    zh: ['季节', '季節', 'jì jié', '季節'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['春天是我最喜欢的季节。', 'Chūntiān shì wǒ zuì xǐhuan de jìjié.', '春は私が最も好きな季節です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['法律', 'ほうりつ', '国家が定める法規範'],
+    zh: ['法律', '法律', 'fǎ lǜ', '法律'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['每个人都应该遵守法律。', 'Měi ge rén dōu yīnggāi zūnshǒu fǎlǜ.', '誰もが法律を守るべきです。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['規則', 'きそく', '守るべき決まり'],
+    zh: ['规则', '規則', 'guī zé', '規則、ルール'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['请遵守这里的规则。', 'Qǐng zūnshǒu zhèlǐ de guīzé.', 'ここの規則を守ってください。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['制度', 'せいど', '社会や組織の仕組み'],
+    zh: ['制度', '制度', 'zhì dù', '制度、仕組み'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这个制度需要改革。', 'Zhège zhìdù xūyào gǎigé.', 'この制度は改革が必要です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['計画', 'けいかく', '物事の進め方をあらかじめ定めること'],
+    zh: ['计划', '計劃', 'jì huà', '計画、計画する'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['我们正在制定旅行计划。', 'Wǒmen zhèngzài zhìdìng lǚxíng jìhuà.', '私たちは旅行計画を立てています。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['活動', 'かつどう', 'ある目的で行動すること'],
+    zh: ['活动', '活動', 'huó dòng', '活動、活動する'],
+    similarity: 96, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['学校举办了很多活动。', 'Xuéxiào jǔbàn le hěn duō huódòng.', '学校は多くの活動を行いました。'],
+    note: '中国語では動詞としても使う。'
+  },
+  {
+    ja: ['会議', 'かいぎ', '複数人で話し合う集まり'],
+    zh: ['会议', '會議', 'huì yì', '会議'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['会议下午三点结束。', 'Huìyì xiàwǔ sān diǎn jiéshù.', '会議は午後3時に終わります。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['企業', 'きぎょう', '事業活動を行う組織'],
+    zh: ['企业', '企業', 'qǐ yè', '企業'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这是一家国际企业。', 'Zhè shì yì jiā guójì qǐyè.', 'これは国際企業です。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['紹介', 'しょうかい', '人や物を他者に知らせること'],
+    zh: ['介绍', '介紹', 'jiè shào', '紹介する、紹介'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['我来介绍一下我的朋友。', 'Wǒ lái jièshào yíxià wǒ de péngyou.', '友達を紹介します。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['説明', 'せつめい', '内容や理由をわかるように述べること'],
+    zh: ['说明', '說明', 'shuō míng', '説明する、説明'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['请说明一下原因。', 'Qǐng shuōmíng yíxià yuányīn.', '理由を説明してください。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['結論', 'けつろん', '議論や考察の最終的な判断'],
+    zh: ['结论', '結論', 'jié lùn', '結論'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['我们得出了相同的结论。', 'Wǒmen déchū le xiāngtóng de jiélùn.', '私たちは同じ結論に達しました。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['評価', 'ひょうか', '価値や成果を判断すること'],
+    zh: ['评价', '評價', 'píng jià', '評価する、評価'],
+    similarity: 98, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['大家对这部电影评价很高。', 'Dàjiā duì zhè bù diànyǐng píngjià hěn gāo.', 'みんなこの映画を高く評価しています。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['批判', 'ひはん', '問題点などを検討し評価すること'],
+    zh: ['批判', '批判', 'pī pàn', '批判する'],
+    similarity: 95, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他公开批判了这个决定。', 'Tā gōngkāi pīpàn le zhège juédìng.', '彼はこの決定を公に批判しました。'],
+    note: '意味はかなり近い。'
+  },
+  {
+    ja: ['家族', 'かぞく', '同じ家庭を構成する人々'],
+    zh: ['家族', '家族', 'jiā zú', '家族、一族'],
+    similarity: 82, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他们家族很大。', 'Tāmen jiāzú hěn dà.', '彼らの一族は大きいです。'],
+    note: '中国語でも家族を指すが、一族・家系寄りの響きもある。日常の家族は「家人」が非常によく使われる。'
+  },
+  {
+    ja: ['感情', 'かんじょう', '喜怒哀楽などの気持ち'],
+    zh: ['感情', '感情', 'gǎn qíng', '感情、愛情、関係の親密さ'],
+    similarity: 82, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他们两个人感情很好。', 'Tāmen liǎng ge rén gǎnqíng hěn hǎo.', '二人はとても仲が良いです。'],
+    note: '中国語では人間関係の親密さ・愛情の意味にも広く使う。'
+  },
+  {
+    ja: ['準備', 'じゅんび', '前もって用意すること'],
+    zh: ['准备', '準備', 'zhǔn bèi', '準備する、〜するつもりだ'],
+    similarity: 85, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['我准备明年去中国。', 'Wǒ zhǔnbèi míngnián qù Zhōngguó.', '私は来年中国へ行くつもりです。'],
+    note: '中国語では「〜するつもりだ」という予定・意図の用法も非常によく使う。'
+  },
+  {
+    ja: ['意識', 'いしき', '心に感じたり認識したりする働き'],
+    zh: ['意识', '意識', 'yì shí', '意識、気づく、認識する'],
+    similarity: 84, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['他已经意识到问题的严重性。', 'Tā yǐjīng yìshí dào wèntí de yánzhòngxìng.', '彼はすでに問題の深刻さに気づきました。'],
+    note: '中国語では動詞「気づく・認識する」としてよく使う。'
+  },
+  {
+    ja: ['主任', 'しゅにん', 'ある部署や業務の責任者'],
+    zh: ['主任', '主任', 'zhǔ rèn', '主任、責任者、部門の長'],
+    similarity: 82, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['王主任今天不在办公室。', 'Wáng zhǔrèn jīntiān bú zài bàngōngshì.', '王主任は今日はオフィスにいません。'],
+    note: '意味は近いが、中国語では病院・学校・行政など幅広い組織の責任者の肩書きとして使う。'
+  },
+  {
+    ja: ['部長', 'ぶちょう', '会社などの部門の責任者'],
+    zh: ['部长', '部長', 'bù zhǎng', '大臣、部門の長'],
+    similarity: 62, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['部长今天出席了会议。', 'Bùzhǎng jīntiān chūxí le huìyì.', '部長／大臣は今日会議に出席しました。'],
+    note: '中国語では政府の「大臣」に当たる肩書きとして非常に重要。組織内の部門長を指す場合もある。'
+  },
+  {
+    ja: ['中学', 'ちゅうがく', '中学校の略称'],
+    zh: ['中学', '中學', 'zhōng xué', '中等教育の学校。初級中学・高級中学を含む'],
+    similarity: 72, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['他在一所中学教数学。', 'Tā zài yì suǒ zhōngxué jiāo shùxué.', '彼はある中学校・中等学校で数学を教えています。'],
+    note: '中国語「中学」は日本の中学校だけでなく、高校段階を含む中等教育機関を広く指す。'
+  },
+  {
+    ja: ['関係', 'かんけい', '物事や人どうしのつながり'],
+    zh: ['关系', '關係', 'guān xi', '関係、つながり、人脈'],
+    similarity: 88, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这件事跟我没有关系。', 'Zhè jiàn shì gēn wǒ méiyǒu guānxi.', 'この件は私には関係ありません。'],
+    note: '基本義は近い。中国語では人脈・コネを表す「关系」の用法も重要。'
+  },
+  {
+    ja: ['対象', 'たいしょう', '働きかけや研究などの相手となるもの'],
+    zh: ['对象', '對象', 'duì xiàng', '対象、相手、恋愛・結婚相手'],
+    similarity: 72, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['他还没有对象。', 'Tā hái méiyǒu duìxiàng.', '彼にはまだ恋人・交際相手がいません。'],
+    note: '中国語では「恋愛・結婚相手」の意味で日常的に使う。'
+  },
+  {
+    ja: ['単位', 'たんい', '数量を測る基準、学習成果の単位'],
+    zh: ['单位', '單位', 'dān wèi', '単位、勤務先・組織'],
+    similarity: 65, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['你在哪个单位工作？', 'Nǐ zài nǎ ge dānwèi gōngzuò?', 'どの勤務先・組織で働いていますか。'],
+    note: '数量の単位の意味に加え、中国語では勤務先や組織を「单位」と呼ぶ用法が非常に重要。'
+  },
+  {
+    ja: ['単純', 'たんじゅん', '複雑でないこと'],
+    zh: ['单纯', '單純', 'dān chún', '単純、純粋、世間慣れしていない'],
+    similarity: 70, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['她的想法很单纯。', 'Tā de xiǎngfǎ hěn dānchún.', '彼女の考えはとても純粋です。'],
+    note: '中国語では「純粋だ・素朴だ」という人物評価にもよく使う。'
+  },
+  {
+    ja: ['無事', 'ぶじ', '事故や問題がなく安全であること'],
+    zh: ['无事', '無事', 'wú shì', '用事がない、何事もない'],
+    similarity: 68, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['今天无事，我就在家休息。', 'Jīntiān wúshì, wǒ jiù zài jiā xiūxi.', '今日は用事がないので家で休みます。'],
+    note: '「何事もない」は共通するが、中国語では「用事がない・暇だ」の意味にもなる。'
+  },
+  {
+    ja: ['用心', 'ようじん', '注意して気をつけること'],
+    zh: ['用心', '用心', 'yòng xīn', '心を込める、注意深く取り組む、意図'],
+    similarity: 48, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他做事很用心。', 'Tā zuòshì hěn yòngxīn.', '彼はとても丁寧に仕事をします。'],
+    note: '中国語は「心を込めて・注意深く」の意味が中心。日本語の「用心する」は「小心」「注意」など。'
+  },
+  {
+    ja: ['心得', 'こころえ', '知識や心構え、規則など'],
+    zh: ['心得', '心得', 'xīn dé', '体験から得た感想・学び・心得'],
+    similarity: 58, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['请分享一下你的学习心得。', 'Qǐng fēnxiǎng yíxià nǐ de xuéxí xīndé.', 'あなたの学習で得た気づきや心得を共有してください。'],
+    note: '日本語の「心得」は知識・心構え、中国語は経験から得た感想や学びの意味が強い。'
+  },
+  {
+    ja: ['大事', 'だいじ', '重要なこと、大切なこと'],
+    zh: ['大事', '大事', 'dà shì', '重大な出来事、大きな問題'],
+    similarity: 62, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这是关系到大家的大事。', 'Zhè shì guānxì dào dàjiā de dàshì.', 'これは皆に関わる重大なことです。'],
+    note: '中国語では「大切」という形容動詞的な使い方より「重大な事柄」の名詞用法が中心。'
+  },
+  {
+    ja: ['自信', 'じしん', '自分の能力や判断を信じる気持ち'],
+    zh: ['自信', '自信', 'zì xìn', '自信、自信がある'],
+    similarity: 96, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他对自己很有自信。', 'Tā duì zìjǐ hěn yǒu zìxìn.', '彼は自分にとても自信があります。'],
+    note: '意味はほぼ同じ。中国語では「有自信」の形がよく使われる。'
+  },
+  {
+    ja: ['得意', 'とくい', '上手であること、誇らしく思うこと'],
+    zh: ['得意', '得意', 'dé yì', '満足して得意になる、有頂天になる'],
+    similarity: 48, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他考试得了第一名，非常得意。', 'Tā kǎoshì dé le dì-yī míng, fēicháng déyì.', '彼は試験で1位になり、とても得意になっています。'],
+    note: '「得意げ」の意味は重なるが、日本語の「得意科目＝上手な分野」は通常「擅长」などで表す。'
+  },
+  {
+    ja: ['無理', 'むり', '実現が難しいこと、道理に合わないこと'],
+    zh: ['无理', '無理', 'wú lǐ', '道理がない、理不尽である'],
+    similarity: 45, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这个要求太无理了。', 'Zhège yāoqiú tài wúlǐ le.', 'この要求はあまりに理不尽です。'],
+    note: '中国語では「不可能」の意味ではなく、主に「道理に合わない・理不尽」。'
+  },
+  {
+    ja: ['意見', 'いけん', '考えや主張'],
+    zh: ['意见', '意見', 'yì jiàn', '意見、不満、異議'],
+    similarity: 82, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['你有什么意见吗？', 'Nǐ yǒu shénme yìjiàn ma?', '何か意見がありますか。'],
+    note: '意味は近いが、中国語では「不満・異議」のニュアンスでもよく使う。'
+  },
+  {
+    ja: ['反省', 'はんせい', '自分の行動を振り返り改めること'],
+    zh: ['反省', '反省', 'fǎn xǐng', '反省する、省みる'],
+    similarity: 95, type: 'same' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他认真反省了自己的错误。', 'Tā rènzhēn fǎnxǐng le zìjǐ de cuòwù.', '彼は自分の誤りを真剣に反省しました。'],
+    note: '意味はほぼ同じ。'
+  },
+  {
+    ja: ['議論', 'ぎろん', '意見を出し合って論じること'],
+    zh: ['议论', '議論', 'yì lùn', '論じる、取り沙汰する、批評する'],
+    similarity: 68, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['大家都在议论这件事。', 'Dàjiā dōu zài yìlùn zhè jiàn shì.', 'みんなこの件についてあれこれ話しています。'],
+    note: '中国語では正式な討論より「話題にして論評する・取り沙汰する」意味でも多い。'
+  },
+  {
+    ja: ['交際', 'こうさい', '人と付き合うこと、特に恋愛関係'],
+    zh: ['交际', '交際', 'jiāo jì', '人付き合い、社交'],
+    similarity: 62, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['他很擅长人际交际。', 'Tā hěn shàncháng rénjì jiāojì.', '彼は人付き合いが得意です。'],
+    note: '中国語では社交・人付き合いが中心。日本語ほど恋愛交際を直接意味しない。'
+  },
+  {
+    ja: ['親友', 'しんゆう', '非常に親しい友人'],
+    zh: ['亲友', '親友', 'qīn yǒu', '親戚と友人、親しい友人'],
+    similarity: 50, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['婚礼上来了很多亲友。', 'Hūnlǐ shàng lái le hěn duō qīnyǒu.', '結婚式には多くの親戚や友人が来ました。'],
+    note: '中国語では一般に「親戚と友人」の意味が中心。日本語の「親友」は「好友」「挚友」などが自然。'
+  },
+  {
+    ja: ['関心', 'かんしん', '興味を持ち気にかけること'],
+    zh: ['关心', '關心', 'guān xīn', '気にかける、関心を持つ'],
+    similarity: 78, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['谢谢你一直关心我。', 'Xièxie nǐ yìzhí guānxīn wǒ.', 'ずっと私を気にかけてくれてありがとう。'],
+    note: '日本語は「興味を持つ」、中国語は「気にかける・世話を焼く」の意味が強い。'
+  },
+  {
+    ja: ['冷静', 'れいせい', '落ち着いて感情に左右されないこと'],
+    zh: ['冷静', '冷靜', 'lěng jìng', '冷静、落ち着いている'],
+    similarity: 100, type: 'same' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['遇到问题要保持冷静。', 'Yùdào wèntí yào bǎochí lěngjìng.', '問題が起きたら冷静さを保つ必要があります。'],
+    note: '意味は同じ。'
+  },
+  {
+    ja: ['表情', 'ひょうじょう', '顔に表れた感情や様子'],
+    zh: ['表情', '表情', 'biǎo qíng', '表情、感情を表す'],
+    similarity: 88, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['她脸上的表情很复杂。', 'Tā liǎn shàng de biǎoqíng hěn fùzá.', '彼女の顔の表情は複雑です。'],
+    note: '基本義は同じ。中国語では「感情を表す」意味の語法もある。'
+  },
+  {
+    ja: ['上下', 'じょうげ', '上と下、上がることと下がること'],
+    zh: ['上下', '上下', 'shàng xià', '上と下、およそ〜前後'],
+    similarity: 72, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他三十岁上下。', 'Tā sānshí suì shàngxià.', '彼は30歳前後です。'],
+    note: '中国語では数量の後ろで「〜前後、およそ」を表す用法がある。'
+  },
+  {
+    ja: ['左右', 'さゆう', '左と右、影響を与えること'],
+    zh: ['左右', '左右', 'zuǒ yòu', '左と右、およそ、左右する'],
+    similarity: 82, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['会议三点左右结束。', 'Huìyì sān diǎn zuǒyòu jiéshù.', '会議は3時ごろ終わります。'],
+    note: '中国語では数量・時刻の後ろで「〜ごろ」の意味に非常によく使う。'
+  },
+  {
+    ja: ['入口', 'いりぐち', '建物などへ入る場所'],
+    zh: ['入口', '入口', 'rù kǒu', '入口、口に入れること'],
+    similarity: 82, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['入口在大楼的右边。', 'Rùkǒu zài dàlóu de yòubian.', '入口は建物の右側です。'],
+    note: '基本義は同じ。中国語では「入口できる＝口に入る」のような語法もある。'
+  },
+  {
+    ja: ['差別', 'さべつ', '区別すること、不当に異なる扱いをすること'],
+    zh: ['差别', '差別', 'chā bié', '違い、差異、区別'],
+    similarity: 55, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['这两个方案没有太大差别。', 'Zhè liǎng ge fāng\'àn méiyǒu tài dà chābié.', 'この二つの案には大きな違いがありません。'],
+    note: '中国語ではまず中立的な「違い・差異」。不当な差別は「歧视」などで表す。'
+  },
+  {
+    ja: ['了解', 'りょうかい', '事情を理解して承認すること'],
+    zh: ['了解', '了解', 'liǎo jiě', '理解する、詳しく知る、調べる'],
+    similarity: 72, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我想了解一下具体情况。', 'Wǒ xiǎng liǎojiě yíxià jùtǐ qíngkuàng.', '具体的な状況を少し知りたいです。'],
+    note: '中国語では「調べて知る・詳しく把握する」の意味で非常によく使う。'
+  },
+  {
+    ja: ['多少', 'たしょう', '多いことと少ないこと、少し'],
+    zh: ['多少', '多少', 'duō shao', 'どのくらい、いくつ、いくら'],
+    similarity: 35, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这个多少钱？', 'Zhège duōshao qián?', 'これはいくらですか。'],
+    note: '中国語では基本的な疑問詞「どのくらい・いくつ・いくら」。日本語の「多少＝少し」は通常「多少有一点」など文脈が必要。'
+  },
+  {
+    ja: ['真面目', 'まじめ', '誠実でふざけず、真剣であること'],
+    zh: ['真面目', '真面目', 'zhēn miàn mù', '本当の顔、本当の姿'],
+    similarity: 8, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['终于看清了事情的真面目。', 'Zhōngyú kànqīng le shìqing de zhēn miànmù.', 'ついに物事の真相・本当の姿が見えました。'],
+    note: '中国語「真面目」は「本当の顔・正体」。日本語の「真面目」は「认真」「老实」など。', equivalentKey: '真面目'
+  },
+  {
+    ja: ['顔色', 'かおいろ', '顔の色つや、顔つき'],
+    zh: ['颜色', '顏色', 'yán sè', '色、カラー'],
+    similarity: 12, type: 'different' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['你喜欢什么颜色？', 'Nǐ xǐhuan shénme yánsè?', '何色が好きですか。'],
+    note: '中国語「颜色」は一般的な「色」。日本語の顔色・顔つきは「脸色」。', equivalentKey: '顔色'
+  },
+  {
+    ja: ['出世', 'しゅっせ', '社会的に高い地位や成功を得ること'],
+    zh: ['出世', '出世', 'chū shì', '世に生まれる、世に出る（書面・古風）'],
+    similarity: 12, type: 'different' as SimilarityType, characters: 'identical', lexical: 'chineseRareOrSpecialized',
+    example: ['这个说法带有较强的书面色彩。', 'Zhège shuōfǎ dàiyǒu jiào qiáng de shūmiàn sècǎi.', 'この言い方にはかなり書き言葉的な色合いがあります。'],
+    note: '中国語「出世」は現代日常語の「昇進して成功する」の意味ではない。日本語の「出世する」は「出人头地」「升迁」など。', equivalentKey: '出世'
+  },
+  {
+    ja: ['人間', 'にんげん', '人、人類の一員'],
+    zh: ['人间', '人間', 'rén jiān', 'この世、人間社会'],
+    similarity: 18, type: 'different' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['人间有很多美好的事情。', 'Rénjiān yǒu hěn duō měihǎo de shìqing.', 'この世には多くの美しいことがあります。'],
+    note: '中国語「人间」は「この世・人間社会」。個々の人間なら「人」、人類なら「人类」。', equivalentKey: '人間'
+  },
+  {
+    ja: ['心中', 'しんじゅう', '男女などが一緒に自殺すること'],
+    zh: ['心中', '心中', 'xīn zhōng', '心の中'],
+    similarity: 4, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我心中一直记得这句话。', 'Wǒ xīnzhōng yìzhí jìde zhè jù huà.', '私は心の中でずっとこの言葉を覚えています。'],
+    note: '中国語ではごく普通に「心の中」。日本語の「心中」の意味とは大きく異なる。', equivalentKey: '心中'
+  },
+  {
+    ja: ['彼岸', 'ひがん', '春分・秋分を中心とする仏教行事の時期'],
+    zh: ['彼岸', '彼岸', 'bǐ àn', '向こう岸、理想の境地'],
+    similarity: 28, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['他们终于到达了河的彼岸。', 'Tāmen zhōngyú dàodá le hé de bǐ\'àn.', '彼らはついに川の向こう岸に着きました。'],
+    note: '仏教的語源は共通するが、中国語では「向こう岸・到達すべき境地」の意味。日本の季節行事としての彼岸とは違う。'
+  },
+  {
+    ja: ['大方', 'おおかた', 'だいたい、大部分'],
+    zh: ['大方', '大方', 'dà fang', '気前がよい、自然で堂々としている'],
+    similarity: 20, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['她说话很大方。', 'Tā shuōhuà hěn dàfang.', '彼女は話し方が自然で堂々としています。'],
+    note: '中国語では「気前がよい・堂々としている」。なお dàfāng には「専門家・識者」など別の読みと語義もある。'
+  },
+  {
+    ja: ['邪魔', 'じゃま', '行動の妨げになること'],
+    zh: ['邪魔', '邪魔', 'xié mó', '邪悪な魔物、悪魔'],
+    similarity: 4, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['故事里出现了一个邪魔。', 'Gùshi lǐ chūxiàn le yí ge xiémó.', '物語に邪悪な魔物が登場しました。'],
+    note: '中国語では魔物・邪悪なもの。日本語の「邪魔する」は「打扰」「妨碍」など。', equivalentKey: '邪魔'
+  },
+  {
+    ja: ['結束', 'けっそく', '志などを同じくしてまとまること'],
+    zh: ['结束', '結束', 'jié shù', '終わる、終了する'],
+    similarity: 5, type: 'different' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['会议已经结束了。', 'Huìyì yǐjīng jiéshù le.', '会議はもう終わりました。'],
+    note: '典型的な同形異義語。日本語の「結束」は「团结」など。', equivalentKey: '結束'
+  },
+  {
+    ja: ['作風', 'さくふう', '芸術家や作品に見られる特徴的なスタイル'],
+    zh: ['作风', '作風', 'zuò fēng', '仕事ぶり、態度、気風、スタイル'],
+    similarity: 42, type: 'overlap' as SimilarityType, characters: 'scriptVariant', lexical: 'bothCommon',
+    example: ['他的工作作风很认真。', 'Tā de gōngzuò zuòfēng hěn rènzhēn.', '彼の仕事ぶりはとても真面目です。'],
+    note: '中国語では芸術作品に限らず、仕事ぶり・生活態度・組織風土など広く使う。'
+  },
+  {
+    ja: ['交代', 'こうたい', '人や役割が入れ替わること'],
+    zh: ['交代', '交代', 'jiāo dài', '引き継ぐ、説明する、言い渡す'],
+    similarity: 18, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['请把事情交代清楚。', 'Qǐng bǎ shìqing jiāodài qīngchu.', '事情をきちんと説明・申し送りしてください。'],
+    note: '中国語は「引き継ぐ・説明する・言い渡す」など。日本語の勤務交代は「换班」「轮班」など。', equivalentKey: '交代'
+  },
+  {
+    ja: ['小人', 'こびと', '非常に背の低い人、物語上の小人'],
+    zh: ['小人', '小人', 'xiǎo rén', '卑劣な人、器の小さい人'],
+    similarity: 5, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['不要听信小人的话。', 'Bú yào tīngxìn xiǎorén de huà.', '卑劣な人の言葉を信じないでください。'],
+    note: '中国語では強い否定的評価。「小さな人」という意味で安易に使わない。日本語の小人なら「小矮人」など。', equivalentKey: '小人'
+  },
+  {
+    ja: ['是非', 'ぜひ', 'どうしても、必ず。善悪・正邪'],
+    zh: ['是非', '是非', 'shì fēi', '是非、善悪、もめ事'],
+    similarity: 38, type: 'overlap' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['不要卷入这些是非。', 'Bú yào juǎnrù zhèxiē shìfēi.', 'こうしたもめ事に巻き込まれないでください。'],
+    note: '善悪・正邪の意味は共通するが、日本語の副詞「ぜひ」に当たる用法はない。'
+  },
+  {
+    ja: ['清楚', 'せいそ', '飾り気がなく清らかで上品なこと'],
+    zh: ['清楚', '清楚', 'qīng chu', 'はっきりしている、明確である'],
+    similarity: 8, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['我听得很清楚。', 'Wǒ tīng de hěn qīngchu.', '私ははっきり聞こえます。'],
+    note: '日本語の「清楚」と中国語の「清楚」は現代語で意味が大きく異なる。日本語の清楚な雰囲気は「清秀」「素雅」など文脈次第。'
+  },
+  {
+    ja: ['地道', 'じみち', '派手ではないが着実に進めること'],
+    zh: ['地道', '地道', 'dì dao', '本場の、正真正銘の、自然な'],
+    similarity: 8, type: 'different' as SimilarityType, characters: 'identical', lexical: 'bothCommon',
+    example: ['这家店的北京菜很地道。', 'Zhè jiā diàn de Běijīngcài hěn dìdao.', 'この店の北京料理はとても本場らしいです。'],
+    note: '中国語 dìdao は「本場の・正真正銘の」。別読み dìdào は「地下道」。日本語の地道とは異なる。'
+  },
 ];
 
-export const words: WordEntry[] = seeds.map((s, i) => ({
+export const words: ReviewedWordEntry[] = seeds.map((s, i) => ({
   id: i + 1,
   japanese: { word: s.ja[0], reading: s.ja[1], meaning: s.ja[2] },
   chinese: { simplified: s.zh[0], traditional: s.zh[1], pinyin: s.zh[2], meaning: s.zh[3] },
@@ -959,4 +1798,3 @@ export const words: WordEntry[] = seeds.map((s, i) => ({
   note: s.note,
   ...(s.equivalentKey ? { equivalentChinese: equivalents[s.equivalentKey] } : {}),
 }));
-
