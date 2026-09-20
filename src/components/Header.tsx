@@ -1,0 +1,3 @@
+import { BookIcon } from './icons';
+interface Props{mode:'dictionary'|'quiz';setMode:(m:'dictionary'|'quiz')=>void;count:number}
+export function Header({mode,setMode,count}:Props){return <><header className="header"><div className="brand"><BookIcon/><div><strong>日中漢字ことば辞典</strong><span>見た目は同じ。でも意味も同じとは限らない。</span></div></div><p className="brand-note">ことばで、もっと近くに。</p></header><nav className="tabs" aria-label="メインメニュー"><button className={mode==='dictionary'?'active':''} onClick={()=>setMode('dictionary')}>辞書 <span>{count}</span></button><button className={mode==='quiz'?'active':''} onClick={()=>setMode('quiz')}>クイズ</button></nav></>}

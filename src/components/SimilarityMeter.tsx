@@ -1,0 +1,2 @@
+import type { SimilarityType } from '../types/Word';
+export function SimilarityMeter({value,type}:{value:number;type:SimilarityType}){return <div className="meter-wrap"><div className="meter-label"><span>意味の類似度</span><strong className={type}>{value}<small>%</small></strong></div><div className="meter" role="meter" aria-label={`意味の類似度 ${value}%`} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}><i className={type} style={{width:`${value}%`}}/></div></div>}
