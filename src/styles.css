@@ -47,3 +47,19 @@ footer{font-size:15px}
 .feedback .example{margin-top:14px;padding:13px 0 4px;border-top:1px solid currentColor}
 .feedback .example p{margin:6px 0}
 @media(max-width:720px){.lexical-status strong{font-size:15px}.lexical-status p{font-size:14px}.equivalent-word strong{font-size:25px}}
+
+/* Chinese pronunciation controls. */
+.speak-button{display:inline-grid!important;place-items:center;flex:none;width:34px;height:34px;padding:0!important;margin:0!important;border:1px solid #b9cbe0!important;border-radius:50%!important;background:#f3f8fe!important;color:var(--blue)!important;cursor:pointer;vertical-align:middle;transition:background .15s,border-color .15s,transform .15s}
+.speak-button:hover:not(:disabled){background:#e2f0ff!important;border-color:#6fa5dd!important;transform:scale(1.05)}
+.speak-button:focus-visible{outline:3px solid #aed6ff;outline-offset:2px}
+.speak-button:disabled{cursor:not-allowed;opacity:.4}
+.speak-button.speaking{background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important}
+.speak-button svg{position:static!important;width:18px!important;height:18px!important}
+.spoken-text{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}
+.spoken-text>span{min-width:0}
+.chinese-word{align-items:center;flex-wrap:wrap}
+.equivalent-word .speak-button{width:32px;height:32px}
+.quiz-question{display:flex;align-items:center;justify-content:center;gap:10px;margin:22px 0 30px}
+.quiz-question h1{margin:0}
+.feedback-answer{display:flex;align-items:center;gap:9px}
+@media(max-width:720px){.speak-button{width:38px;height:38px}.quiz-question{align-items:flex-start}.quiz-question h1{font-size:27px}}
